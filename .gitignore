@@ -1,0 +1,12 @@
+# Virtual environments
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+
+# Other
+.ruff_cache/
+.claude/
+**/__pycache__/
+.env
