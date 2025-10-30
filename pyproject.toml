@@ -1,0 +1,23 @@
+[project]
+name = "telewaves"
+version = "0.1.0"
+description = "Download audio files from Telegram instantly and automatically"
+requires-python = ">=3.13"
+dependencies = [
+    "telethon~=1.0",
+    "aiofiles>=23",
+    "requests~=2.31",
+    "cryptg~=0.4",
+]
+
+[dependency-groups]
+dev = [
+    "ruff",
+    "mypy"
+]
+
+[tool.ruff.lint]
+select = ["I"]
+
+[tool.mypy]
+disable_error_code = "import-untyped"
