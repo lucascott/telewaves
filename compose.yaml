@@ -1,6 +1,6 @@
 services:
   telewaves:
-    build: .
+    image: ghcr.io/lucascott/telewaves
     # Set it to a user that has RW permissions to the host data and library directories mounted as volumes
     # user: 1000:1000
     restart: unless-stopped
