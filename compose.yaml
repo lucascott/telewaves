@@ -11,4 +11,6 @@ services:
       # Telegram App configuration from https://my.telegram.org/apps
       TELEGRAM_API_ID: UPDATE_ME
       TELEGRAM_API_HASH: UPDATE_ME
-      # CHAT_FILTER: "1437229810"
+      # Refer to README.md for the filters' settings
+      # CHAT_FILTER: "1437229810,@foobar"
+      # EXTENSIONS_FILTER: "audio,video,.zip"

@@ -5,7 +5,7 @@ A simple service that monitors your personal Telegram messages for media files a
 ## ✨ Features
 
 - 🎯 **Smart Chat Filtering**: Configure which chats/users to monitor
-- 📁 **Format filtering**: Supports filtering for specific file extensions
+- 📁 **Extension Filtering**: Filter downloads by file extensions with presets (audio, video, image, document, archive) or custom extension lists
 - 🔄 **Session Persistence**: Authenticate once, works forever
 
 ## 🚀 Quick Start
@@ -40,7 +40,7 @@ docker compose up -d
 TeleWaves supports filtering which chats to monitor. This is useful if you only want to download files from specific bots or users.
 By default, all chats are monitored.
 
-### Filter Format:
+### Filter Format
 - **Usernames**: `@username` or `username` (case-insensitive)
 - **Chat IDs**: `12345678` (numeric chat ID)
 - **Multiple**: Comma-separated values
@@ -50,18 +50,38 @@ For example:
 export CHAT_FILTER="@some_bot,12345678,@friend_username"
 ```
 
+## 📁 Extension Filtering
+
+TeleWaves supports filtering downloads by file extensions to only save the media types you want. 
+By default, all media files are downloaded. Use a combination of predefined collections and/or explicit extensions to
+have a fine-grained extensions filter.
+
+The predefined collections of file extensions are (source: [`constants.py`](./telewaves/constants.py)):
+
+- **`audio`**: `.mp3`, `.flac`, `.m4a`, `.ogg`, `.wav`, `.aac`, `.wma`, `.aiff`, `.ape`
+- **`video`**: `.mp4`, `.avi`, `.mkv`, `.mov`, `.wmv`, `.flv`, `.webm`, `.m4v`
+- **`image`**: `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.tiff`, `.webp`, `.svg`
+- **`document`**: `.pdf`, `.doc`, `.docx`, `.txt`, `.rtf`, `.odt`, `.pages`
+- **`archive`**: `.zip`, `.rar`, `.7z`, `.tar`, `.gz`, `.bz2`, `.xz`
+
+For example:
+```shell
+export EXTENSIONS_FILTER="audio,.pdf,.zip"
+```
+
 ## ⚙️ Configuration
 
 TeleWaves is configured via environment variables:
 
-| Variable            | Required | Default    | Description                                   |
-|---------------------|----------|------------|-----------------------------------------------|
-| `TELEGRAM_API_ID`   | ✅        | -          | Telegram API ID from my.telegram.org/apps     |
-| `TELEGRAM_API_HASH` | ✅        | -          | Telegram API hash from my.telegram.org/apps   |
-| `DOWNLOAD_DIR`      | ❌        | `/library` | Directory to save downloaded audio files      |
-| `DATA_DIR`          | ❌        | `/data`    | Directory for application data and sessions   |
-| `SESSION_NAME`      | ❌        | `session`  | Name for Telegram session file                |
-| `CHAT_FILTER`       | ❌        | `""`       | Comma-separated chat IDs/usernames to monitor |
+| Variable            | Required | Default    | Description                                                        |
+|---------------------|----------|------------|--------------------------------------------------------------------|
+| `TELEGRAM_API_ID`   | ✅        | -          | Telegram API ID from my.telegram.org/apps                          |
+| `TELEGRAM_API_HASH` | ✅        | -          | Telegram API hash from my.telegram.org/apps                        |
+| `DOWNLOAD_DIR`      | ❌        | `/library` | Directory to save downloaded media files                           |
+| `DATA_DIR`          | ❌        | `/data`    | Directory for application data and sessions                        |
+| `SESSION_NAME`      | ❌        | `session`  | Name for Telegram session file                                     |
+| `CHAT_FILTER`       | ❌        | `""`       | Comma-separated chat IDs/usernames to monitor                      |
+| `EXTENSIONS_FILTER` | ❌        | `""`       | Comma-separated extensions/presets (e.g., "audio,video,.zip,.pdf") |
 
 ## 🔒 Security & Privacy
 
