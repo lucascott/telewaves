@@ -116,10 +116,7 @@ class TeleWaves:
         # Check based on user info (username or user ID)
         if user_info:
             user_info = user_info.lower()
-            if (
-                user_info in self.chat_filter
-                or f"@{user_info.lower()}" in self.chat_filter
-            ):
+            if user_info in self.chat_filter or f"@{user_info}" in self.chat_filter:
                 return True
         return False
 
@@ -228,7 +225,7 @@ class TeleWaves:
             return None
 
         if hasattr(user, "username") and (username := user.username):
-            return f"@{username}"
+            return username
         else:
             return str(user.id)
 
@@ -254,11 +251,11 @@ class TeleWaves:
         # Check if we should process this chat
         if not self._should_process_chat(chat_id, sender_info):
             logger.debug(
-                f"Skipping message from {sender_info} in chat {chat_id} (filtered out)"
+                f"Skipping message from @{sender_info} in chat {chat_id} (filtered out)"
             )
             return
 
-        logger.info(f"Processing message from {sender_info} in chat {chat_id}")
+        logger.info(f"Processing message from @{sender_info} in chat {chat_id}")
 
         media = message.media
         filename = None
