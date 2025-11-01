@@ -230,7 +230,7 @@ class TeleWaves:
         if hasattr(user, "username") and (username := user.username):
             return f"@{username}"
         else:
-            return user.id
+            return str(user.id)
 
     async def process_message(self, event: events.NewMessage.Event):
         """
