@@ -23,7 +23,7 @@ A simple service that monitors your personal Telegram messages for media files a
 On first run, TeleWaves will prompt you to authenticate. Therefore, the recommended approach is to run the container interactively
 
 ```shell
-docker run --rm -v ./data:/data -e TELEGRAM_API_ID=CHANGE_ME -e TELEGRAM_API_HASH=CHANGE_ME -it ghcr.io/lucascott/telewaves
+docker run --rm -v ./data:/data -e TELEGRAM_API_ID=CHANGE_ME -e TELEGRAM_API_HASH=CHANGE_ME -it ghcr.io/lucascott/telewaves:main
 ```
 
 After authentication, your session is saved in the volume destination and you won't need to authenticate again.
