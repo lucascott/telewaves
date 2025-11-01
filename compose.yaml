@@ -1,0 +1,14 @@
+services:
+  telewaves:
+    build: .
+    # Set it to a user that has RW permissions to the host data and library directories mounted as volumes
+    # user: 1000:1000
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+      - ./library:/library
+    environment:
+      # Telegram App configuration from https://my.telegram.org/apps
+      TELEGRAM_API_ID: UPDATE_ME
+      TELEGRAM_API_HASH: UPDATE_ME
+      # CHAT_FILTER: "1437229810"

@@ -1,0 +1,22 @@
+# Version control
+.git/
+.gitignore
+
+# Virtual environments
+.venv/
+
+# Docker
+compose.yaml
+.dockerignore
+
+# IDEs
+.vscode/
+.idea/
+
+# Other
+.ruff_cache/
+.claude/
+**/__pycache__/
+.env
+data/
+library/
