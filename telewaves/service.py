@@ -12,21 +12,24 @@ from pathlib import Path
 from telethon import TelegramClient, events
 from telethon.tl.types import MessageMediaDocument
 
+from telewaves.constants import EXTENSION_PRESETS, _Presets
+
 logger = logging.getLogger(__name__)
 
 
 class TeleWaves:
     """
-    Main service class for monitoring Telegram messages and downloading audio files.
+    Main service class for monitoring Telegram messages and downloading media files.
 
     This service acts as your personal Telegram user account to monitor all incoming
-    messages for audio files, automatically downloading them to a specified directory.
-    Supports chat filtering to monitor only specific users or channels.
+    messages for media files, automatically downloading them to a specified directory
+    based on configurable extension filtering. Supports chat filtering to monitor
+    only specific users or channels.
 
     Attributes:
-        download_dir (Path): Directory where audio files will be saved
+        download_dir (Path): Directory where media files will be saved
         chat_filter (set[str] | None): Set of chat IDs/usernames to monitor (None = all chats)
-        audio_extensions (set[str]): Supported audio file extensions
+        allowed_extensions (set[str]): Set of allowed file extensions for download
         client (TelegramClient): Telethon client for Telegram API interactions
     """
 
@@ -37,6 +40,7 @@ class TeleWaves:
         session_dir: Path,
         download_dir: Path,
         chat_filter: set[str] | None = None,
+        extensions_filter: set[str | _Presets] | None = None,
     ):
         """
         Initialize the TeleWaves service.
@@ -45,12 +49,16 @@ class TeleWaves:
             telegram_api_id (int): Telegram API ID from my.telegram.org/apps
             telegram_api_hash (str): Telegram API hash from my.telegram.org/apps
             session_dir (Path): Directory to store Telegram session files
-            download_dir (Path): Directory to save downloaded audio files
+            download_dir (Path): Directory to save downloaded media files
             chat_filter (set[str] | None): Set of chat IDs/usernames to monitor.
                                          If None, monitors all chats.
+            extensions_filter (set[str] | None): File extensions to download.
+                                                    Can be a set of extensions (e.g., {'.mp3', '.flac'}), or a
+                                                    a preset name (e.g., 'audio'), or None for all media.
 
         Raises:
             FileNotFoundError: If download_dir doesn't exist or session_dir parent doesn't exist
+            ValueError: If extension_filter preset is not recognized
         """
         self.download_dir = Path(download_dir)
         self.chat_filter = chat_filter
@@ -69,7 +77,21 @@ class TeleWaves:
         else:
             logger.info("No chat filter - monitoring all chats")
 
-        self.audio_extensions = {".mp3", ".flac"}
+        # Set up extension filtering
+        self.allowed_extensions = set()
+        if not extensions_filter:
+            # Default behavior: download all media types
+            logger.info(
+                "No extension in extensions filter - downloading all media types"
+            )
+        else:
+            for ext in extensions_filter:
+                if extensions := EXTENSION_PRESETS.get(ext):
+                    logger.debug(f"Extension preset found: {ext}")
+                    self.allowed_extensions.update(extensions)
+                else:
+                    self.allowed_extensions.add(ext)
+            logger.info(f"Selected extensions: {', '.join(self.allowed_extensions)}")
 
         self.client = TelegramClient(session_dir, telegram_api_id, telegram_api_hash)
 
@@ -101,17 +123,21 @@ class TeleWaves:
                 return True
         return False
 
-    def is_audio_file(self, file_path: Path) -> bool:
+    def _should_download_file(self, file_path: Path) -> bool:
         """
-        Check if a file is an audio file based on its file extension.
+        Check if a file should be downloaded based on the extensions filtering configuration.
 
         Args:
             file_path (Path): Path to the file to check
 
         Returns:
-            bool: True if the file has a supported audio extension, False otherwise
+            bool: True if the file should be downloaded, False otherwise
         """
-        return file_path.suffix.lower() in self.audio_extensions
+        if not self.allowed_extensions:
+            # No extension filtering - download all media
+            return True
+
+        return file_path.suffix.lower() in self.allowed_extensions
 
     @staticmethod
     def sanitize_filename(filename: str) -> str:
@@ -208,11 +234,11 @@ class TeleWaves:
 
     async def process_message(self, event: events.NewMessage.Event):
         """
-        Process incoming Telegram messages to detect and download audio files.
+        Process incoming Telegram messages to detect and download media files.
 
         This method is called for every new message received by the Telegram client.
         It checks if the message contains media, applies chat filtering, and downloads
-        any detected audio files.
+        any media files that match the configured extension filter.
 
         Args:
             event (events.NewMessage.Event): Telegram new message event
@@ -267,56 +293,47 @@ class TeleWaves:
                     if ext:
                         filename += ext
 
-            # Check if it's an audio file
-            if document.mime_type and (
-                document.mime_type.startswith("audio/")
-                or document.mime_type in ["video/mp4", "video/x-msvideo"]
-            ):
-                should_download = True
-                logger.info(
-                    f"Found audio document: {filename} (MIME: {document.mime_type})"
-                )
-            elif filename and Path(filename).suffix.lower() in self.audio_extensions:
-                should_download = True
-                logger.info(f"Found audio file by extension: {filename}")
-            else:
-                logger.debug(
-                    f"Document {filename} is not an audio file (MIME: {document.mime_type})"
-                )
-
-        if should_download and filename:
-            try:
-                # Download the file
-                downloaded_path = await self.download_media_file(
-                    message, media, filename
-                )
-
-                if downloaded_path and downloaded_path.exists():
-                    # Verify it's actually an audio file
-                    if self.is_audio_file(downloaded_path):
-                        logger.info(
-                            f"Successfully processed audio file: {downloaded_path}"
-                        )
-
-                        # Optional: Log file size
-                        file_size = downloaded_path.stat().st_size
-                        size_mb = file_size / (1024 * 1024)
-                        logger.info(f"File size: {size_mb:.2f} MB")
-
-                    else:
-                        logger.warning(
-                            f"Downloaded file is not an audio file: {downloaded_path}"
-                        )
-                        # Optionally remove non-audio files
-                        downloaded_path.unlink(missing_ok=True)
-                        logger.info(f"Removed non-audio file: {downloaded_path}")
-                else:
-                    logger.error(
-                        f"Failed to download or file doesn't exist: {filename}"
+            # Check if file should be downloaded based on extension filtering
+            if filename:
+                if self._should_download_file(Path(filename)):
+                    logger.info(
+                        f"Found matching file: {filename} (MIME: {document.mime_type})"
                     )
+                    try:
+                        # Download the file
+                        downloaded_path = await self.download_media_file(
+                            message, media, filename
+                        )
 
-            except Exception as e:
-                logger.error(f"Failed to process audio file {filename}: {e}")
+                        if downloaded_path and downloaded_path.exists():
+                            # Verify it matches our extension filter
+                            if self._should_download_file(downloaded_path):
+                                logger.info(
+                                    f"Successfully processed media file: {downloaded_path}"
+                                )
+
+                                # Optional: Log file size
+                                file_size = downloaded_path.stat().st_size
+                                size_mb = file_size / (1024 * 1024)
+                                logger.info(f"File size: {size_mb:.2f} MB")
+
+                            else:
+                                logger.warning(
+                                    f"Downloaded file does not match extension filter: {downloaded_path}"
+                                )
+                                # Optionally remove filtered files
+                                downloaded_path.unlink(missing_ok=True)
+                                logger.info(f"Removed filtered file: {downloaded_path}")
+                        else:
+                            logger.error(
+                                f"Failed to download or file doesn't exist: {filename}"
+                            )
+                    except Exception as e:
+                        logger.error(f"Failed to process audio file {filename}: {e}")
+                else:
+                    logger.debug(
+                        f"Document {filename} does not match extension filter (MIME: {document.mime_type})"
+                    )
 
     async def run(self):
         """
@@ -324,7 +341,8 @@ class TeleWaves:
 
         This method initializes the Telegram client, handles authentication,
         sets up message event handlers, and keeps the service running until
-        manually stopped or disconnected.
+        manually stopped or disconnected. Downloads media files based on the
+        configured extensions filtering.
 
         Raises:
             EOFError: When authentication is interrupted in non-interactive mode
@@ -351,7 +369,7 @@ class TeleWaves:
             async def handler(event):
                 await self.process_message(event)
 
-            logger.info("Monitoring your Telegram messages for audio files...")
+            logger.info("Monitoring your Telegram messages for media files...")
 
             # Keep the client running
             await self.client.run_until_disconnected()

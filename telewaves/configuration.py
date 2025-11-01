@@ -36,21 +36,22 @@ class Configuration:
     data_dir: Path
     session_dir: Path
     chat_filter: set[str]
+    extensions_filter: set[str]
 
 
-def _parse_chat_filter(chat_filter: str) -> set[str]:
+def _parse_comma_separated_entities(string_collection: str) -> set[str]:
     """
     Parse a comma-separated string of chat identifiers into a normalized set.
 
     Args:
-        chat_filter (str): Comma-separated string of chat IDs or usernames
+        string_collection (str): Comma-separated string of entities
 
     Returns:
         set[str]: Set of normalized, lowercase chat identifiers
     """
-    if not chat_filter:
+    if not string_collection:
         return set()
-    entities = chat_filter.split(",")
+    entities = string_collection.split(",")
     return {entity.strip().lower() for entity in entities if entity.strip()}
 
 
@@ -87,6 +88,9 @@ def load_configuration() -> Configuration:
         sys.exit(1)
 
     chat_filter = os.getenv(EnvironmentVariables.CHAT_FILTER, Defaults.chat_filter)
+    extensions_filter = os.getenv(
+        EnvironmentVariables.EXTENSIONS_FILTER, Defaults.extensions_filter
+    )
 
     data_dir = Path(os.getenv(EnvironmentVariables.DATA_DIR, Defaults.data_dir))
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -105,5 +109,6 @@ def load_configuration() -> Configuration:
         download_dir=download_dir,
         data_dir=data_dir,
         session_dir=session_dir,
-        chat_filter=_parse_chat_filter(chat_filter),
+        chat_filter=_parse_comma_separated_entities(chat_filter),
+        extensions_filter=_parse_comma_separated_entities(extensions_filter),
     )

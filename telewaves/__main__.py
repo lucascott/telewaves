@@ -38,6 +38,7 @@ async def main():
         config.session_dir,
         config.download_dir,
         config.chat_filter,
+        config.extensions_filter,
     ).run()
 
 
