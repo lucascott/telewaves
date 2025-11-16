@@ -31,7 +31,7 @@ class EnvironmentVariables(StrEnum):
 
 
 # Predefined extension presets
-_Presets = Literal["audio", "video", "image", "document", "archive"]
+Presets = Literal["audio", "video", "image", "document", "archive"]
 EXTENSION_PRESETS = {
     "audio": {".mp3", ".flac", ".m4a", ".ogg", ".wav", ".aac", ".wma", ".aiff", ".ape"},
     "video": {".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm", ".m4v"},

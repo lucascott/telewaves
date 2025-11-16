@@ -12,7 +12,7 @@ from pathlib import Path
 from telethon import TelegramClient, events
 from telethon.tl.types import MessageMediaDocument
 
-from telewaves.constants import EXTENSION_PRESETS, _Presets
+from telewaves.constants import EXTENSION_PRESETS, Presets
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class TeleWaves:
         session_dir: Path,
         download_dir: Path,
         chat_filter: set[str] | None = None,
-        extensions_filter: set[str | _Presets] | None = None,
+        extensions_filter: set[str | Presets] | None = None,
     ):
         """
         Initialize the TeleWaves service.
@@ -78,7 +78,13 @@ class TeleWaves:
             logger.info("No chat filter - monitoring all chats")
 
         # Set up extension filtering
-        self.allowed_extensions = set()
+        self.allowed_extensions = self._prepare_allowed_extensions(extensions_filter)
+
+        self.client = TelegramClient(session_dir, telegram_api_id, telegram_api_hash)
+
+    @staticmethod
+    def _prepare_allowed_extensions(extensions_filter: set[Presets | str] | None):
+        extensions_set = set()
         if not extensions_filter:
             # Default behavior: download all media types
             logger.info(
@@ -88,12 +94,18 @@ class TeleWaves:
             for ext in extensions_filter:
                 if extensions := EXTENSION_PRESETS.get(ext):
                     logger.debug(f"Extension preset found: {ext}")
-                    self.allowed_extensions.update(extensions)
+                    extensions_set.update(extensions)
+                elif ext.startswith("."):
+                    extensions_set.add(ext)
                 else:
-                    self.allowed_extensions.add(ext)
-            logger.info(f"Selected extensions: {', '.join(self.allowed_extensions)}")
+                    extension_with_dot = f".{ext}"
+                    logger.warning(
+                        f"Extension '{ext}' doesn't start with '.', assuming '{extension_with_dot}'. Define the extension with a leading dot to avoid this warning."
+                    )
+                    extensions_set.add(extension_with_dot)
 
-        self.client = TelegramClient(session_dir, telegram_api_id, telegram_api_hash)
+            logger.info(f"Selected extensions: {', '.join(extensions_set)}")
+        return extensions_set
 
     def _should_process_chat(self, chat_id: int, user_info: str | None = None) -> bool:
         """
