@@ -4,9 +4,9 @@ A simple service that monitors your personal Telegram messages for media files a
 
 ## ✨ Features
 
-- 🎯 **Smart Chat Filtering**: Configure which chats/users to monitor
-- 📁 **Extension Filtering**: Filter downloads by file extensions with presets (audio, video, image, document, archive) or custom extension lists
-- 🔄 **Session Persistence**: Authenticate once, works forever
+- **Chat Filtering**: Configure which chats/users to monitor
+- **Extension Filtering**: Filter downloads by file extensions with presets (audio, video, image, document, archive) or custom extension lists
+- **Session Persistence**: Authenticate once, works forever
 
 ## 🚀 Quick Start
 
@@ -26,7 +26,7 @@ On first run, TeleWaves will prompt you to authenticate. Therefore, the recommen
 docker run --rm -v ./data:/data -e TELEGRAM_API_ID=CHANGE_ME -e TELEGRAM_API_HASH=CHANGE_ME -it ghcr.io/lucascott/telewaves:main
 ```
 
-After authentication, your session is saved in the volume destination and you won't need to authenticate again.
+After authenticating, your session is saved in the volume destination and you won't need to authenticate again.
 
 ### Run with Docker Compose
 
@@ -73,22 +73,20 @@ export EXTENSIONS_FILTER="audio,.pdf,.zip"
 
 TeleWaves is configured via environment variables:
 
-| Variable            | Required | Default    | Description                                                        |
-|---------------------|----------|------------|--------------------------------------------------------------------|
-| `TELEGRAM_API_ID`   | ✅        | -          | Telegram API ID from my.telegram.org/apps                          |
-| `TELEGRAM_API_HASH` | ✅        | -          | Telegram API hash from my.telegram.org/apps                        |
-| `DOWNLOAD_DIR`      | ❌        | `/library` | Directory to save downloaded media files                           |
-| `DATA_DIR`          | ❌        | `/data`    | Directory for application data and sessions                        |
-| `SESSION_NAME`      | ❌        | `session`  | Name for Telegram session file                                     |
-| `CHAT_FILTER`       | ❌        | `""`       | Comma-separated chat IDs/usernames to monitor                      |
-| `EXTENSIONS_FILTER` | ❌        | `""`       | Comma-separated extensions/presets (e.g., "audio,video,.zip,.pdf") |
+| Variable            | Default    | Description                                                        |
+|---------------------|------------|--------------------------------------------------------------------|
+| `TELEGRAM_API_ID`   | Required   | Telegram API ID from my.telegram.org/apps                          |
+| `TELEGRAM_API_HASH` | Required   | Telegram API hash from my.telegram.org/apps                        |
+| `DOWNLOAD_DIR`      | `/library` | Directory to save downloaded media files                           |
+| `DATA_DIR`          | `/data`    | Directory for application data and sessions                        |
+| `SESSION_NAME`      | `session`  | Name for Telegram session file                                     |
+| `CHAT_FILTER`       | `""`       | Comma-separated chat IDs/usernames to monitor                      |
+| `EXTENSIONS_FILTER` | `""`       | Comma-separated extensions/presets (e.g., "audio,video,.zip,.pdf") |
 
 ## 🔒 Security & Privacy
 
 - **User Impersonation**: Acts as your personal Telegram account
-- **Local Processing**: All processing happens on your machine/server
-- **Session Encryption**: Session files are encrypted by Telegram's client library
-- **No Data Transmission**: No data sent to external servers
+- **No Data Collection**: No telemetry or data collection
 
 ## 📄 License
 
@@ -101,4 +99,4 @@ TeleWaves acts as your personal Telegram user account. Use responsibly and in co
 - Copyright laws and intellectual property rights
 - Local regulations regarding content downloading
 
-Only download content you have permission to access. The authors are not responsible for any misuse of this software.
+Only download content you have permission to access. I'm not responsible for any misuse of this software.
