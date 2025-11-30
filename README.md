@@ -10,7 +10,7 @@ A simple service that monitors your personal Telegram messages for media files a
 
 ## 🚀 Quick Start
 
-### 1. Get Telegram API Credentials
+### Get Telegram API Credentials
 
 1. Visit [https://my.telegram.org/apps](https://my.telegram.org/apps)
 2. Log in with your phone number
@@ -19,7 +19,7 @@ A simple service that monitors your personal Telegram messages for media files a
    - **Short name**: telewaves
 4. Copy your **API ID** and **API Hash**
 
-### 3. First Run Authentication
+### First Run Authentication
 On first run, TeleWaves will prompt you to authenticate. Therefore, the recommended approach is to run the container interactively
 
 ```shell
